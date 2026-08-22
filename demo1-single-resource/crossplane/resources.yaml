@@ -10,8 +10,8 @@ metadata:
   name: demo-rg
   namespace: team-a
   labels:
-    demo.crossplane.io/stack: team-a
-    demo.crossplane.io/role: resource-group
+    mycompany.com/stack: team-a
+    mycompany.com/role: resource-group
 spec:
   forProvider:
     location: westeurope
@@ -24,8 +24,8 @@ metadata:
   name: demosa001
   namespace: team-a
   labels:
-    demo.crossplane.io/stack: team-a
-    demo.crossplane.io/role: storage-account
+    mycompany.com/stack: team-a
+    mycompany.com/role: storage-account
 spec:
   forProvider:
     location: westeurope

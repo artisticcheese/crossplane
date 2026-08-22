@@ -1,13 +1,11 @@
-# Applies the private-networking stack around demo 1's storage account:
-# VNet -> Subnet -> Private Endpoint <-> Storage Account, resolved via a
-# Private DNS Zone linked to the VNet.
+# Applies composition.yaml: one namespaced XR whose Composition Function
+# pipeline creates and wires a private-by-default storage account behind
+# a VNet -> Subnet -> Private Endpoint, resolved via a Private DNS Zone
+# linked to the VNet. Only demo 1's ResourceGroup is reused from outside
+# this XR.
 $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $crossplaneDir = Join-Path $scriptDir "..\crossplane"
 
-kubectl apply -f (Join-Path $crossplaneDir "virtual-network.yaml")
-kubectl apply -f (Join-Path $crossplaneDir "subnet.yaml")
-kubectl apply -f (Join-Path $crossplaneDir "private-dns-zone.yaml")
-kubectl apply -f (Join-Path $crossplaneDir "private-dns-zone-vnet-link.yaml")
-kubectl apply -f (Join-Path $crossplaneDir "storage-account-private.yaml")
-kubectl apply -f (Join-Path $crossplaneDir "private-endpoint.yaml")
+kubectl apply -f (Join-Path $crossplaneDir "composition.yaml")
+kubectl wait --for=condition=Ready xprivatestorage/team-a-storage -n team-a --timeout=300s

@@ -10,9 +10,12 @@ same cluster:
    apply a namespaced Managed Resource directly (`ResourceGroup` +
    `Account`) — no Claim, per Crossplane v2.
 2. **[`demo2-more-involved-deployment/`](demo2-more-involved-deployment/README.md)**
-   — slide 13: a virtual network, subnet, private DNS zone, and a private
-   endpoint wired to that same storage account via resource selectors —
-   still plain Managed Resources, no Composition/XRD involved.
+   — slides 13-14: a private-by-default storage account, virtual
+   network, subnet, private DNS zone, and a private endpoint, all
+   created and wired together from **one namespaced XR**
+   (`XPrivateStorage`) by a `function-patch-and-transform` Composition
+   pipeline — a single `kubectl apply`, reusing only demo 1's resource
+   group.
 
 Both assume: a Kubernetes cluster is already running, `kubectl` is
 pointed at it, PowerShell 7+ is available, and you already have Azure
