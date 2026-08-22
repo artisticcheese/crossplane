@@ -1,0 +1,23 @@
+apiVersion: network.azure.upbound.io/v1beta1
+kind: PrivateDNSZoneVirtualNetworkLink
+metadata:
+  name: vnet-link-team-a
+  namespace: team-a
+  labels:
+    demo.crossplane.io/stack: team-a
+    demo.crossplane.io/role: private-dns-zone-vnet-link
+spec:
+  forProvider:
+    registrationEnabled: false
+    resourceGroupNameSelector:
+      matchLabels:
+        demo.crossplane.io/stack: team-a
+        demo.crossplane.io/role: resource-group
+    privateDnsZoneNameSelector:
+      matchLabels:
+        demo.crossplane.io/stack: team-a
+        demo.crossplane.io/role: private-dns-zone
+    virtualNetworkIdSelector:
+      matchLabels:
+        demo.crossplane.io/stack: team-a
+        demo.crossplane.io/role: virtual-network

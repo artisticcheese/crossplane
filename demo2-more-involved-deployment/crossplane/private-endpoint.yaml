@@ -1,0 +1,37 @@
+# The privateDnsZoneGroup block is what the deck's diagram labels as a
+# separate "PrivateDNSZoneGroup" resource — in the actual Azure/Terraform
+# model it's a block nested inside PrivateEndpoint, not a standalone CRD.
+apiVersion: network.azure.upbound.io/v1beta1
+kind: PrivateEndpoint
+metadata:
+  name: pe-demosa001
+  namespace: team-a
+  labels:
+    demo.crossplane.io/stack: team-a
+    demo.crossplane.io/role: private-endpoint
+spec:
+  forProvider:
+    location: westeurope
+    resourceGroupNameSelector:
+      matchLabels:
+        demo.crossplane.io/stack: team-a
+        demo.crossplane.io/role: resource-group
+    subnetIdSelector:
+      matchLabels:
+        demo.crossplane.io/stack: team-a
+        demo.crossplane.io/role: subnet
+    privateServiceConnection:
+      - name: psc-demosa001
+        isManualConnection: false
+        subresourceNames:
+          - blob
+        privateConnectionResourceIdSelector:
+          matchLabels:
+            demo.crossplane.io/stack: team-a
+            demo.crossplane.io/role: storage-account
+    privateDnsZoneGroup:
+      - name: default
+        privateDnsZoneIdsSelector:
+          matchLabels:
+            demo.crossplane.io/stack: team-a
+            demo.crossplane.io/role: private-dns-zone

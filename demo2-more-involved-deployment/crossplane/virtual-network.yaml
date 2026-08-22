@@ -1,0 +1,17 @@
+apiVersion: network.azure.upbound.io/v1beta1
+kind: VirtualNetwork
+metadata:
+  name: vnet-team-a
+  namespace: team-a
+  labels:
+    demo.crossplane.io/stack: team-a
+    demo.crossplane.io/role: virtual-network
+spec:
+  forProvider:
+    location: westeurope
+    addressSpace:
+      - 10.0.0.0/16
+    resourceGroupNameSelector:
+      matchLabels:
+        demo.crossplane.io/stack: team-a
+        demo.crossplane.io/role: resource-group

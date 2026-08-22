@@ -1,0 +1,18 @@
+# Re-applies demo 1's storage account (same name/namespace) with public
+# network access turned off, now that a private endpoint will front it.
+apiVersion: storage.azure.upbound.io/v1beta1
+kind: Account
+metadata:
+  name: demosa001
+  namespace: team-a
+  labels:
+    demo.crossplane.io/stack: team-a
+    demo.crossplane.io/role: storage-account
+spec:
+  forProvider:
+    location: westeurope
+    accountTier: Standard
+    accountReplicationType: LRS
+    publicNetworkAccessEnabled: false
+    resourceGroupNameSelector:
+      matchControllerRef: true

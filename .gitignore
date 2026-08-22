@@ -1,0 +1,18 @@
+# Secrets / credentials — never commit these
+*.json
+!azure-sp-config.example.json
+*.env
+.env*
+set-env.ps1
+!set-env.example.ps1
+azure-credentials*
+azure-sp-config.json
+kubeconfig*
+*.kubeconfig
+
+# PowerPoint lock files
+~$*.pptx
+~$*.ppt
+
+# kind / local cluster state
+.kind/
