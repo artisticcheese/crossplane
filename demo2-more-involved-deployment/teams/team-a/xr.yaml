@@ -1,0 +1,11 @@
+# What team-a actually applies — one namespaced XR, no Claim. Requires
+# the platform team's crossplane/xrd.yaml and crossplane/composition.yaml
+# to already be applied, and the team-a namespace to exist.
+apiVersion: mycompany.com/v1
+kind: XPrivateStorage
+metadata:
+  name: team-a-storage
+  namespace: team-a
+spec:
+  location: westeurope
+  storageAccountName: demosa2001

@@ -1,0 +1,18 @@
+# What team-b actually applies — one namespaced XR, no Claim. Requires
+# the platform team's crossplane/xrd.yaml and crossplane/composition.yaml
+# to already be applied, and the team-b namespace to exist.
+#
+# Shares the same Composition as team-a's instance (teams/team-a/xr.yaml)
+# but is fully isolated from it: its own namespace, its own VNet/Subnet/
+# Storage Account/Private Endpoint. The one exception is the
+# PrivateDNSZone, which is a fixed Azure-mandated name (see the caveat in
+# crossplane/composition.yaml) — don't apply this alongside team-a's
+# instance unless team-a's has been torn down first.
+apiVersion: mycompany.com/v1
+kind: XPrivateStorage
+metadata:
+  name: team-b-storage
+  namespace: team-b
+spec:
+  location: westeurope
+  storageAccountName: demosb2001

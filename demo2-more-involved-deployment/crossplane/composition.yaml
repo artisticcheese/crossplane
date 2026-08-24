@@ -3,7 +3,10 @@
 # private-dns-zone-vnet-link.yaml, private-endpoint.yaml) with a single
 # namespaced XR whose Composition wires all of them together via a
 # function-patch-and-transform pipeline. Matches slide 13 ("A More
-# Involved Deployment") and slide 14 ("Why XRs & XRDs?").
+# Involved Deployment") and slide 14 ("Why XRs & XRDs?"). The
+# CompositeResourceDefinition this Composition implements lives in
+# xrd.yaml, alongside this file — both owned by the platform team. Each
+# consuming team applies their own instance from teams/<team>/xr.yaml.
 #
 # Unlike the first version of this file, the storage account is now
 # composed here too — a fresh, private-by-default Account, not demo 1's
@@ -19,33 +22,6 @@
 #   - matchLabels                -> the target is owned by a *different*
 #     controller. Only the resource group is external here — applied
 #     directly by demo 1 — so matchControllerRef would not find it.
-apiVersion: apiextensions.crossplane.io/v2
-kind: CompositeResourceDefinition
-metadata:
-  name: xprivatestorages.mycompany.com
-spec:
-  scope: Namespaced
-  group: mycompany.com
-  names:
-    kind: XPrivateStorage
-    plural: xprivatestorages
-  versions:
-    - name: v1
-      served: true
-      referenceable: true
-      schema:
-        openAPIV3Schema:
-          type: object
-          properties:
-            spec:
-              type: object
-              properties:
-                location:
-                  type: string
-                  description: Azure region for the VNet, storage account, and private endpoint.
-              required:
-                - location
----
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
@@ -107,11 +83,6 @@ spec:
               apiVersion: storage.azure.upbound.io/v1beta1
               kind: Account
               metadata:
-                # storageAccountName (metadata.name) must be globally unique
-                # across all of Azure — change "demosa2001" before the talk
-                # if it's already taken, and if it collides with demo 1's
-                # "demosa001" convention.
-                name: demosa2001
                 labels:
                   mycompany.com/stack: team-a
                   mycompany.com/role: storage-account
@@ -128,6 +99,13 @@ spec:
               - type: FromCompositeFieldPath
                 fromFieldPath: spec.location
                 toFieldPath: spec.forProvider.location
+              - type: FromCompositeFieldPath
+                # metadata.name (the actual Azure storage account name)
+                # must be globally unique across all of Azure — this is
+                # why it comes from the XR's spec instead of being
+                # hardcoded, so each team's instance names its own.
+                fromFieldPath: spec.storageAccountName
+                toFieldPath: metadata.name
 
           - name: private-dns-zone
             base:
@@ -136,7 +114,14 @@ spec:
               metadata:
                 # Not a placeholder — Azure's private-link DNS integration
                 # for Blob Storage specifically resolves through this
-                # exact zone name.
+                # exact zone name. Unlike the storage account/endpoint
+                # below, this name can't be parameterized per team — it's
+                # fixed by Azure. Only one XR instance can compose it at a
+                # time; running a second team's instance while the first
+                # is still up will fail trying to recreate the same zone.
+                # Fine for this demo (present one team live), but a real
+                # multi-tenant setup would make this an externally-shared
+                # resource selected via matchLabels, like the ResourceGroup.
                 name: privatelink.blob.core.windows.net
                 labels:
                   mycompany.com/stack: team-a
@@ -173,7 +158,6 @@ spec:
               apiVersion: network.azure.upbound.io/v1beta1
               kind: PrivateEndpoint
               metadata:
-                name: pe-demosa2001
                 labels:
                   mycompany.com/stack: team-a
                   mycompany.com/role: private-endpoint
@@ -186,8 +170,7 @@ spec:
                   subnetIdSelector:
                     matchControllerRef: true
                   privateServiceConnection:
-                    - name: psc-demosa2001
-                      isManualConnection: false
+                    - isManualConnection: false
                       subresourceNames: ["blob"]
                       # Targets the storage-account resource composed
                       # above, by this same XR — matchControllerRef.
@@ -201,6 +184,24 @@ spec:
               - type: FromCompositeFieldPath
                 fromFieldPath: spec.location
                 toFieldPath: spec.forProvider.location
+              - type: CombineFromComposite
+                # Derived from storageAccountName (not hardcoded) so two
+                # teams' instances don't collide on this name either.
+                combine:
+                  variables:
+                    - fromFieldPath: spec.storageAccountName
+                  strategy: string
+                  string:
+                    fmt: "pe-%s"
+                toFieldPath: metadata.name
+              - type: CombineFromComposite
+                combine:
+                  variables:
+                    - fromFieldPath: spec.storageAccountName
+                  strategy: string
+                  string:
+                    fmt: "psc-%s"
+                toFieldPath: spec.forProvider.privateServiceConnection[0].name
 
     - step: auto-ready
       functionRef:
@@ -208,12 +209,3 @@ spec:
       input:
         apiVersion: autoready.fn.crossplane.io/v1beta1
         kind: Input
----
-# What the developer actually applies — one namespaced XR, no Claim.
-apiVersion: mycompany.com/v1
-kind: XPrivateStorage
-metadata:
-  name: team-a-storage
-  namespace: team-a
-spec:
-  location: westeurope
