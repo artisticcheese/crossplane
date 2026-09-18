@@ -1,10 +1,10 @@
-# Secrets / credentials — never commit these
+# Secrets / credentials — never commit these.
+# Nothing in this repo writes a credential file: demo-run-of-show.ps1 keeps
+# the whole credential document in memory and pipes it to kubectl over stdin.
+# These patterns stay as a safety net against anything created by hand.
 *.json
-!azure-sp-config.example.json
 *.env
 .env*
-set-env.ps1
-!set-env.example.ps1
 azure-credentials*
 azure-sp-config.json
 kubeconfig*

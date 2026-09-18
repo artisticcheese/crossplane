@@ -1,9 +1,0 @@
-# Matches slide 11 ("Onboarding the Azure Provider"). The deck's slide
-# shows a shorthand ":v1" for readability — this file pins the actual
-# latest verified tag instead.
-apiVersion: pkg.crossplane.io/v1
-kind: Provider
-metadata:
-  name: provider-azure-storage
-spec:
-  package: xpkg.upbound.io/upbound/provider-azure-storage:v2.7.0
